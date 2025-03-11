@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction - Gesture Controlled Robot Car</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="background"></div>
+
+    <div class="container">
+        <h1>Circuit Connections</h1>
+        <h2>1. Transmitter Section (Hand Gesture Controller)</h2>
+    <table border="1" align="center">
+        <tr>
+            <th>Component</th>
+            <th>Connected To</th>
+            <th>Why This Connection?</th>
+        </tr>
+        <tr>
+            <td>ADXL335 Accelerometer</td>
+            <td>VCC → 3.3V, GND → GND</td>
+            <td>The ADXL335 operates at 3.3V. Connecting it to 5V may damage it.</td>
+        </tr>
+        <tr>
+            <td>X-axis Output</td>
+            <td>A1(Arduino Nano)</td>
+            <td>The accelerometer gives analog output based on tilt. A1 reads this data.</td>
+        </tr>
+        <tr>
+            <td>Y-axis Output</td>
+            <td>A2(Arduino Nano)</td>
+            <td>The Y-axis tilt is read as an analog signal.</td>
+        </tr>
+        <tr>
+            <td>Z-axis Output</td>
+            <td>A3(Arduino Nano)</td>
+            <td>The Z-axis value helps in detecting up/down movements.</td>
+        </tr>
+        <tr>
+            <td>RF Transmitter Module</td>
+            <td>VCC → 3.3V, GND → GND</td>
+            <td>The RF module operates at 3.3V.</td>
+        </tr>
+        <tr>
+            <td>Data Pin</td>
+            <td>Digital Pin (D12)</td>
+            <td>The Arduino sends movement commands as a digital signal to the RF module.</td>
+        </tr>
+        <tr>
+            <td>Antenna</td>
+            <td>External Wire</td>
+            <td>Helps improve wireless transmission range.</td>
+        </tr>
+    </table>
+
+    <h2>2. Receiver Section (car)</h2>
+    <table border="1" align="center">
+        <tr>
+            <th>Component</th>
+            <th>Connected To</th>
+            <th>Why This Connection?</th>
+        </tr>
+        <tr>
+            <td>RF Receiver Module</td>
+            <td>VCC → 5V, GND → GND</td>
+            <td>The receiver works at 5V and needs a common ground.</td>
+        </tr>
+        <tr>
+            <td>Data Pin</td>
+            <td>Digital Pin (D12)</td>
+            <td>The Arduino receives movement commands from the RF module here.</td>
+        </tr>
+        <tr>
+            <td>Motor Driver Shield (L293D-based)</td>
+            <td>Mounted on Arduino Uno</td>
+            <td>The shield simplifies motor control with direct connections.</td>
+        </tr>
+        <tr>
+            <td>Motor Power Supply</td>
+            <td>External 9V</td>
+            <td>The motors need a higher current, which the Arduino alone cannot supply.</td>
+        </tr>
+        <tr>
+            <td>Motor 1</td>
+            <td>M1 (Motor Shield)</td>
+            <td>One motor controls the left wheel.</td>
+        </tr>
+        <tr>
+            <td>Motor 2</td>
+            <td>M2 (Motor Shield)</td>
+            <td>The second motor controls the right wheel.</td>
+        </tr>
+        <tr>
+            <td>Arduino Uno Power</td>
+            <td>9V Battery</td>
+            <td>Provides power to the microcontroller.</td>
+        </tr>
+    </table>
+
+        <a href="menu.html" class="glow-button">Back to Menu</a>
+    </div>
+
+</body>
+</html>
