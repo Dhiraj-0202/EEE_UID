@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction - Gesture Controlled Robot Car</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="content">
+        <h2>Methodology for Hand Gesture Controlled Robot</h2>
+        <ul align="left">
+            <li><strong>Step 1: Setting up Arduino Uno and Nano</strong>
+                <ul align="left">
+                    <li>Configure both microcontrollers for communication and control tasks.</li>
+                    <li>The Arduino Uno processes sensor data, controls the motor, and manages communication.</li>
+                    <li>The Arduino Nano communicates wirelessly with the RF module for remote control.</li>
+                </ul>
+            </li>
+            <li><strong>Step 2: Wiring the Components</strong>
+                <ul align="left">
+                    <li>Connect ADXL335 accelerometer to Arduino Nano to read motion data (X, Y, Z axis).</li>
+                    <li>Mount the Motor Shield on Arduino Uno to control motor direction and speed.</li>
+                    <li>Connect Gear Motors to the Motor Shield for movement.</li>
+                    <li>Wire the RF Transmitter to Arduino Nano and the RF Receiver to Arduino Uno for wireless communication.</li>
+                </ul>
+            </li>
+            <li><strong>Step 3: Sensor Data Acquisition</strong>
+                <ul align="left">
+                    <li>The ADXL335 accelerometer reads real-time motion data.</li>
+                    <li>The motion data is sent to Arduino Nano for processing.</li>
+                </ul>
+            </li>
+            <li><strong>Step 4: Wireless Communication using RF Module</strong>
+                <ul align="left">
+                    <li>The RF Transmitter (on Arduino Nano) sends movement signals.</li>
+                    <li>The RF Receiver (on Arduino Uno) receives these signals and relays them to the motor control system.</li>
+                </ul>
+            </li>
+            <li><strong>Step 5: Motor Control Based on Motion Detection</strong>
+                <ul align="left">
+                    <li>When specific motion (threshold value) is detected by ADXL335, Arduino Uno sends control signals to the Motor Shield.</li>
+                    <li>The Motor Shield drives the Gear Motors, making the robot move forward, backward, left, or right.</li>
+                </ul>
+            </li>
+            <li><strong>Step 6: Power Supply</strong>
+                <ul align="left">
+                    <li>The Arduino Uno and motors are powered by a 9V battery.</li>
+                    <li>The RF module and Arduino Nano are powered by a 3.7V battery.</li>
+                </ul>
+            </li>
+            <li><strong>Step 7: Testing and Calibration</strong>
+                <ul align="left">
+                    <li>Move the hand controller and check if the robot responds correctly.</li>
+                    <li>Adjust the motion sensitivity of the ADXL335 and fine-tune the motor response for accuracy.</li>
+                    <li>Ensure smooth and reliable communication between components.</li>
+                </ul>
+            </li>
+        </ul>
+        <a href="menu.html" class="glow-button">📜 Back to Menu</a>
+    </div>
+</body>
+</html>
+
+        
