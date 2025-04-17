@@ -1,0 +1,258 @@
+// Gesture Controlled Car - Transmitter Code
+// - MPU6050 + HC-05
+
+#include <Wire.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <SoftwareSerial.h>
+
+SoftwareSerial BTSerial(10, 11);  // HC-05 TX to Arduino 10, RX to Arduino 11
+Adafruit_MPU6050 mpu;
+
+float pitch = 0, roll = 0;
+
+void setup() {
+  Serial.begin(38400);
+  BTSerial.begin(9600);
+  Wire.begin();
+
+  Serial.println("Initializing MPU6050...");
+  if (!mpu.begin()) {
+    Serial.println("MPU6050 connection failed! Check wiring.");
+    while (1);
+  }
+  Serial.println("MPU6050 connected successfully.");
+
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu.setGyroRange(MPU6050_RANGE_500_DEG);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+}
+
+void loop() {
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+
+  pitch = atan2(a.acceleration.y, sqrt(a.acceleration.x * a.acceleration.x + a.acceleration.z * a.acceleration.z)) * 180 / M_PI;
+  roll = atan2(-a.acceleration.x, a.acceleration.z) * 180 / M_PI;
+
+  Serial.print("Pitch: "); Serial.print(pitch);
+  Serial.print("\t Roll: "); Serial.print(roll);
+
+  if ((roll >= -5 && roll <= 5) && (pitch >= -5 && pitch <= 5)) {
+    Serial.println("\t Command: Stop");
+    BTSerial.write('S');
+  } else if (pitch > 15) {
+    Serial.println("\t Command: Backward");
+    BTSerial.write('B');
+  } else if (pitch < -15) {
+    Serial.println("\t Command: Forward");
+    BTSerial.write('F');
+  } else if (roll > 15) {
+    Serial.println("\t Command: Right");
+    BTSerial.write('R');
+  } else if (roll < -15) {
+    Serial.println("\t Command: Left");
+    BTSerial.write('L');
+  }
+
+  delay(100);
+}
+//  - Gesture Controlled Car Receiver Code
+#include <SoftwareSerial.h>
+
+SoftwareSerial BTSerial(10, 11); // HC-05 Bluetooth Module: TX to Arduino 10, RX to Arduino 11
+
+char tiltDirection;
+int motorInput1 = 5;
+int motorInput2 = 6;
+int motorInput3 = 3;
+int motorInput4 = 9;
+
+void setup() {
+  pinMode(motorInput1, OUTPUT);
+  pinMode(motorInput2, OUTPUT);
+  pinMode(motorInput3, OUTPUT);
+  pinMode(motorInput4, OUTPUT);
+  stopCar();  // Ensure motors are off at startup
+
+  Serial.begin(38400);      // Serial communication for debugging
+  BTSerial.begin(9600);     // HC-05 default speed for communication
+  Serial.println("Gesture Controlled Car Ready...");
+}
+
+void loop() {
+  if (BTSerial.available()) {
+    tiltDirection = BTSerial.read();
+    Serial.print("Received: ");
+    Serial.println(tiltDirection);
+
+    if (tiltDirection == 'F') {
+      Serial.println("Moving Forward");
+      forward();
+    } else if (tiltDirection == 'B') {
+      Serial.println("Moving Backward");
+      reverse();
+    } else if (tiltDirection == 'R') {
+      Serial.println("Turning Right");
+      right();
+    } else if (tiltDirection == 'L') {
+      Serial.println("Turning Left");
+      left();
+    } else if (tiltDirection == 'S') {
+      Serial.println("Stopping");
+      stopCar();
+    }
+  }
+}
+
+void forward() {
+  digitalWrite(motorInput1, LOW);
+  digitalWrite(motorInput2, HIGH);
+  digitalWrite(motorInput3, LOW);
+  digitalWrite(motorInput4, HIGH);
+}
+
+void reverse() {
+  digitalWrite(motorInput1, HIGH);
+  digitalWrite(motorInput2, LOW);
+  digitalWrite(motorInput3, HIGH);
+  digitalWrite(motorInput4, LOW);
+}
+
+void right() {
+  digitalWrite(motorInput1, LOW);
+  analogWrite(motorInput2, 150);
+  analogWrite(motorInput3, 150);
+  digitalWrite(motorInput4, LOW);
+}
+
+void left() {
+  analogWrite(motorInput1, 150);
+  digitalWrite(motorInput2, LOW);
+  digitalWrite(motorInput3, LOW);
+  analogWrite(motorInput4, 150);
+}
+
+void stopCar() {
+  digitalWrite(motorInput1, LOW);
+  digitalWrite(motorInput2, LOW);
+  digitalWrite(motorInput3, LOW);
+  digitalWrite(motorInput4, LOW);
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////
+UID CODE:
+
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+
+// Motor control pins (NodeMCU style)
+const int IN1 = 5;   // D1 - GPIO5
+const int IN2 = 4;   // D2 - GPIO4
+const int IN3 = 14;  // D5 - GPIO14
+const int IN4 = 12;  // D6 - GPIO12
+
+// Wi-Fi credentials for Access Point mode
+const char* ssid = "ESP8266-CAR";
+const char* password = "12345678";
+
+ESP8266WebServer server(80);
+
+// HTML page
+const char* webpageHTML = R"rawliteral(
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP8266 Car Control</title>
+  <style>
+    body { text-align: center; font-family: sans-serif; }
+    button { padding: 15px 30px; font-size: 20px; margin: 10px; }
+  </style>
+</head>
+<body>
+  <h2>ESP8266 Car Controller</h2>
+  <button onclick="sendCommand('forward')">Forward</button><br>
+  <button onclick="sendCommand('left')">Left</button>
+  <button onclick="sendCommand('stop')">Stop</button>
+  <button onclick="sendCommand('right')">Right</button><br>
+  <button onclick="sendCommand('backward')">Backward</button>
+
+  <script>
+    function sendCommand(cmd) {
+      fetch("/" + cmd);
+    }
+  </script>
+</body>
+</html>
+)rawliteral";
+
+void setup() {
+  delay(1000); // Delay to help serial settle
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("Booting ESP8266...");
+
+  // Set motor pins as output
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+
+  // Start Access Point
+  WiFi.softAP(ssid, password);
+  delay(1000);  // Allow AP to stabilize
+
+  Serial.println("✅ Access Point Started!");
+  Serial.print("📶 SSID: "); Serial.println(ssid);
+  Serial.print("🔑 Password: "); Serial.println(password);
+  Serial.print("🌐 IP Address: ");
+  Serial.println(WiFi.softAPIP()); // Print IP Address to connect from phone
+
+  // Set web routes
+  server.on("/", []() {
+    server.send(200, "text/html", webpageHTML);
+  });
+  server.on("/forward", []() {
+    moveForward(); server.send(200, "text/plain", "Moving Forward");
+  });
+  server.on("/backward", []() {
+    moveBackward(); server.send(200, "text/plain", "Moving Backward");
+  });
+  server.on("/left", []() {
+    turnLeft(); server.send(200, "text/plain", "Turning Left");
+  });
+  server.on("/right", []() {
+    turnRight(); server.send(200, "text/plain", "Turning Right");
+  });
+  server.on("/stop", []() {
+    stopCar(); server.send(200, "text/plain", "Stopped");
+  });
+
+  server.begin();
+  Serial.println("🌍 Web Server Ready!");
+}
+
+void loop() {
+  server.handleClient();
+}
+
+// Motor control logic
+void moveForward() {
+  digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
+}
+void moveBackward() {
+  digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);
+}
+void turnLeft() {
+  digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
+}
+void turnRight() {
+  digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);
+}
+void stopCar() {
+  digitalWrite(IN1, LOW); digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW); digitalWrite(IN4, LOW);
+}
